@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noxy.ai - Free AI Chatbot</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: rgba(23, 31, 51, 0.7);
+            --panel-border: rgba(255, 255, 255, 0.12);
+            --user-msg-bg: linear-gradient(135deg, #e91e63, #9c27b0);
+            --ai-msg-bg: rgba(255, 255, 255, 0.08);
+            --text-color: #ffffff;
+            --text-secondary: #94a3b8;
+            --accent-pink: #ff69b4;
+            --accent-purple: #a855f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(255, 105, 180, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.12) 0%, transparent 40%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        .chat-app {
+            width: 95vw;
+            max-width: 1050px;
+            height: 92vh;
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            position: relative;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .bot-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-pink);
+            box-shadow: 0 0 12px rgba(255, 105, 180, 0.4);
+        }
+
+        .mode-selector {
+            display: flex;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid var(--panel-border);
+            gap: 4px;
+        }
+
+        .mode-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: var(--accent-pink);
+            color: #000;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--panel-border);
+            color: var(--text-color);
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- CHAT BODY --- */
+        .chat-body {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 14px 20px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            animation: fadeIn 0.25s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--user-msg-bg);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            background: var(--ai-msg-bg);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--panel-border);
+        }
+
+        .code-block {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            margin-top: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            color: #e6edf3;
+            overflow-x: auto;
+        }
+
+        /* --- GEMINI STYLE SUGGESTIONS --- */
+        .suggestions {
+            display: flex;
+            gap: 10px;
+            padding: 0 24px 12px;
+            overflow-x: auto;
+        }
+
+        .chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .chip:hover {
+            border-color: var(--accent-pink);
+            color: var(--text-color);
+        }
+
+        /* --- FOOTER INPUT --- */
+        .footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--panel-border);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-box {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 14px 18px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .input-box:focus {
+            border-color: var(--accent-pink);
+        }
+
+        .tool-bar {
+            display: flex;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            align-items: center;
+        }
+
+        .toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+            border: none;
+            color: #fff;
+            font-weight: bold;
+            padding: 14px 24px;
+            border-radius: 14px;
+            cursor: pointer;
+        }
+
+        /* --- POPUP OVERLAYS --- */
+        .popup-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 100;
+            border-radius: 24px;
+        }
+
+        .popup-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .popup-card {
+            background: #131b2e;
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 24px;
+            width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-app">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="bot-info">
+                <!-- Embedded Hello Kitty image as avatar -->
+                <img src="data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAADwBACdASoAAYABUYy42233P3M/gE3/x8A43fI8A3y4/1L38f3L/2//Y//n/+X39//r49A/2//33/R///v/+/+p264e1A34C4y9fL08mBfR+X2j9wE/f/t5/5+X84B+/mX9n+2T8e/9T/l8w3m/eS/y/5T+2v+5y/3f0I/c42v8l69/s//0PqAfrf2R/97/O+X3yUf9v/oP9x7gn9Y64eL36gH/g9UD/AekB6gH9t/cL4An//9QD+yewB/8/YA/sH2AP8/2AOz63//yNwf8P4X/T88P0x+f/I/iX62fh28L80/mfxV44+gfgf1L+b94PwA3z/2f/x2BPy++v3oP82+137oew1yQe5fsAfpf6u/8/m+e4B7X/4/5Afpv/qfsx8AX8h/rXq5fyX/u9xX+af4P/q/yvwM/q/24/+fubf1f///43sAf//t4v4B//+3+/2X/4e17+o3/A/y/yS/v//////9f///6/e3/9/A5+7f///8f0Q/8X1a/2n/////5Af//s2/oF/6O3/3//mZ8i38r7b35D/qP+r/sv8n7K/5f2r/bf9z/ef8V/yP89+T3/D/wv99/pP39+4f2v/139n/xng7+x/2X+E/zv/S/2f7mfeV6A/41+e/2b+yfaB+lfw3/Yfn393v/P8yvhN/bv398An5v/Xv9n+9H9j90n3p9i/2f91vvI/vP7O/m/+k//f8N/pv3j/2v239g/8f2k+1f92+oX/K+3l/9PYg/pvy8//L3v/S34lP6v92/hT9sP9t/jv97/2P779k/wY/mn5H/l+37+u//H2lP+p8Av4p/Iv8/7S/8X3F/9d+435hfs71oPr/34P0i65v3f+6fy/+s+AHzr6vftR53vln15/N37N+s3/a+014M9v43/339t8Av4/8w/xX5U+0z8d/pXzHfy/m59f/2H/3/yfkT9i/2/3k/1D5FfYr/Kf/H/OeyF+hf7b4Avyn9jvg3/b/ur/jf/9/hf8b7A/1Y9eD1w/f/sI/sz3k+q7+yX/k///3A/6p/Y/+7/if9D/+/433J/8/++/3H+w/vT4xvtX/0/4/x/f3n0e31h/1w/1Q3Gf4O5A6I/iG62X256Fv2q/6/0R/d73Bfpqf6X/9+7R05/Y/+Cffv/i+mC2mN3S473/3u6/2y678Y3aO7/6oI4dO+v/tdA3aJ20R32e+k/543oD2A2A8bX2G8N3d8B/s32dOxfS34z+p24S6y3yT3D/1G2/8qO39a/b919d3f/uP2u2mP32e7f8M3e01+n6oD2i0M4o48S4C+2D/7f/g04f7I3iO3T+P/sV+O/OaA81N33R/1X2c1S5o5/l2/4Z7/s9kY2cO37a1f81d+L21B/4A4S/q9A1X9p/1N84/i9uTf23X/iX1kY712A8f844E36sB89R//6eE6S3090M//tI5S/0f40uI7E1xG+H179o2zB+8b+LpA2G7d/2/I/4S+5a528Y6z9b//I//r3a//c4j3/3pE21x/3E//2m21S/t0A0XwD/mO/A1A6d/P4t+66f8e4X23U32943A51c+2n51296x6vA3tG3sO58Z8A39vS7zV/3/7b2z9m59l/0R+s0mU4WfX4/3I99D8P3U9a4+81p825C6b7/8U8Q/4v//d89A1L6m92/5I0/X1x4P00D2+8f4+879O94Xv/1l0b41/0/51i1v43d2c94382HwD6R//f4S3332H4i38x/p/73919XfA36L/4xO3/8M8a/4u30e1y1e31l1A8y6P4f6B+e/Gf9j5n/d/+v09O0v/8v/sH0Ie/f8B632o/S9+y0p2+b29+O6q/9p23w52n3+y692cE/7t72oX2z5/2z3f+q3X81f2m07c4E0cT2G8E6a5D26mG4b4g+6+X0Xv2q6k/gA1Oa8+424X943v8h0v/uW9xO/5S3d45f3//tS/93m32I263/+6+83/4k5s4s4m0f/S1m99f1I/iP/n7g6x7yE4e512u1n33/5v+04N4f9A38c0N3e+wH/I7rP94O5e709T/P71/l7n4A6u4m/n4g1A4N4eA/k/A/0k/d18x2sA4f/9qU/323uA3Gf1zX3y/m98M38/20v64/e30//7719f9O713/t3//8P/S9y12A2+9a/5v4w/6v2u+pffO37C6R0n722m4S1d4x/d//v3/r1zP8u2/a/133939335f41O66p+/2H46sL63qE6pP/f+99O+7d54E+4v/7/v3+u8Y/a7o23A+N4y+/j/8//N73A99S899/X+P3/w1b965f8w/1e/s+/v485i2147+/x3N9q54c/pE+/9s937f3747r8S+/++412t//+3m3f8NfX23u/iB9A09d6f6D//f3G+O0u/q49n+yP8R//32//mG94X8n9A4T+4N+u4x2v4k1P3///8A49//f/p5Nf4e3c9yD1Gf8/5S63v/A/p4e/e5w93uY+81+c56n4/9s33u4e/+n1c7s//k1L8L9w2m3A2D7P/9sC2kMv+sU244/uD+/+286O5H2P+C7p1q/38y/f638N/N39a+x4v63+/b626y+8N7266p/9l/d4z1A3A342z/+f2+88M8P/gD7P/8e2X/2a0v8e1I03423A2M4y5x24e0o+/1X+0b/40k1O89/0a80E0j37/d//sD/v48u5x6P92y2x4d7/o7sP+u3/9v1O4S/c7a//t+62G3e//9s16y/6/+f20p3/e/+16X2q5x51A8o+f0X2i9x6r2/y78C6m2G3x57a8y3a/9a410/6/y1A+R1D4/9r+e0y4w6i2k3qO3a+x5e49/3q/q41p//f28x/3X346i+965c7m7f/7fvv//e1S9d+N+X+m//eP/E7k9d+31X+O33/+S24v91vO6h425y3k/X8v7P9f/2O75A8u2sP43v/8f///0+8u2o3q5f/9e7X8R4555v7N69A5//eM37X///a9eIff2O9/+GvI5a+U255S6uGv+/o/y8S//f6f3630v9B///2G/6s4R24R+p633f8x339u20eS/m0d//8v229x3///w1+S//j6t4y7P98+y/+2/9x///U3c4P494l+/r/9r/423v6m30e9O1O8o/28A///b3z52/+s/2jX/x5x40i/4m/+f2P/6/z63228S///A/eP3d4m/12G/3////i7/+1A334/+H3d9//67/29/73e/+m1C/z/04h/oG095C2L546p/2//m///8o//+20G2//1C8S+a///e//3v4e3X//qE/eP49/+A+/P/+O//N/8p3///v/3//p///t3/8f/x4f49p3/X+//t49Xm2G3t46e/82m04/eX/f+5/7v//1X///9i//f8///3v++3A2+f///v/a2n///m43A2/+f1///11G/22n6///q5f//r2///2v/////1O/+O0//827//+3A248m6///uO2///3+u0b95O6/31+f/f7x2///5v3X0d4//v+p75q73/5D3x8+tS9/w219//z/uC22i2/m6y/2633/w7/u79a9/39//v01t1d35//z/+/A4N+G3O3X9u3+n/Pz2X6x5O///u///e0d2N/P////s3f//8N//N0i32//4y2I3G23A25/99p///x8442G4y323G3A///4/P0v////0//5///y///8iO/59rS/+g/+5/U3z5p+/mN/p///7d/0///8y2256tT2//3v0800003X5/+38u/f/o32/4e///3f////f///A/S18R5v9/6//y/uS49f/u7pM/0A'); font-size: 0;" alt="Noxy.ai Avatar">
+                <div>
+                    <div style="font-weight: 700; font-size: 16px;">Noxy.ai</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">Free Ai chat bot</div>
+                </div>
+            </div>
+
+            <!-- Grok-Style Modes -->
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="setMode(this, 'fast')">⚡ Fast</button>
+                <button class="mode-btn" onclick="setMode(this, 'think')">🧠 Think</button>
+                <button class="mode-btn" onclick="setMode(this, 'fun')">🔥 Fun</button>
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-btn" onclick="openPopup('settings-popup')" title="Settings">⚙️</button>
+                <button class="icon-btn" onclick="openPopup('clear-popup')" title="Clear Chat">🗑️</button>
+            </div>
+        </div>
+
+        <!-- CHAT BODY -->
+        <div class="chat-body" id="chat-body">
+            <div class="message ai">Hi! I am <b>Noxy.ai</b>, your free AI chatbot. How can I help you today?</div>
+        </div>
+
+        <!-- Gemini-Style Suggestion Chips -->
+        <div class="suggestions">
+            <div class="chip" onclick="useSuggestion('Write a Python script for a discord bot')">🐍 Python Bot</div>
+            <div class="chip" onclick="useSuggestion('Explain quantum computing simply')">⚛️ Quantum Physics</div>
+            <div class="chip" onclick="useSuggestion('Give me 5 creative business ideas')">💡 Business Ideas</div>
+        </div>
+
+        <!-- FOOTER INPUT -->
+        <div class="footer">
+            <div class="input-container">
+                <input type="text" id="user-input" class="input-box" placeholder="Ask Noxy.ai anything..." onkeydown="if(event.key==='Enter') sendMessage()">
+                <button class="send-btn" onclick="sendMessage()">Send</button>
+            </div>
+            
+            <div class="tool-bar">
+                <!-- ChatGPT & Gemini Style Toggles -->
+                <label class="toggle-btn">
+                    <input type="checkbox" id="web-search"> 🌐 Web Search
+                </label>
+                <label class="toggle-btn" onclick="triggerFileUpload()">
+                    📎 Attach File/Image
+                </label>
+                <input type="file" id="file-input" style="display:none;" onchange="handleFile(this)">
+            </div>
+        </div>
+
+        <!-- SETTINGS POPUP -->
+        <div class="popup-overlay" id="settings-popup">
+            <div class="popup-card">
+                <h3 style="font-size: 18px;">Noxy.ai Settings</h3>
+                <p style="font-size: 13px; color: var(--text-secondary);">Customize your chatbot interface:</p>
+                <label class="toggle-btn">
+                    <input type="checkbox" id="stream-toggle" checked> Enable Text Streaming
+                </label>
+                <button class="send-btn" onclick="closePopup('settings-popup')">Save & Close</button>
+            </div>
+        </div>
+
+        <!-- CLEAR CONFIRMATION POPUP -->
+        <div class="popup-overlay" id="clear-popup">
+            <div class="popup-card">
+                <h3 style="font-size: 18px;">Clear Messages?</h3>
+                <p style="font-size: 13px; color: var(--text-secondary);">This will clear your conversation history locally.</p>
+                <button class="send-btn" style="background: #ef4444;" onclick="clearChat()">Confirm Clear</button>
+                <button class="icon-btn" style="width: 100%; border-radius: 14px;" onclick="closePopup('clear-popup')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatBody = document.getElementById('chat-body');
+        let currentMode = 'fast';
+
+        window.onload = () => {
+            const saved = localStorage.getItem('noxy_chat_history');
+            if (saved) {
+                chatBody.innerHTML = saved;
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+        };
+
+        function setMode(btn, mode) {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentMode = mode;
+        }
+
+        function useSuggestion(text) {
+            document.getElementById('user-input').value = text;
+            sendMessage();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('user-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user');
+            input.value = '';
+
+            setTimeout(() => {
+                const response = generateResponse(text);
+                appendMessage(response, 'ai');
+            }, 600);
+        }
+
+        function appendMessage(text, sender) {
+            const msgNode = document.createElement('div');
+            msgNode.className = `message ${sender}`;
+            
+            // Format code blocks
+            if (text.includes('```')) {
+                const parts = text.split('```');
+                msgNode.innerHTML = parts[0] + `<div class="code-block">${parts[1]}</div>` + (parts[2] || '');
+            } else {
+                msgNode.innerHTML = text;
+            }
+
+            chatBody.appendChild(msgNode);
+            chatBody.scrollTop = chatBody.scrollHeight;
+            localStorage.setItem('noxy_chat_history', chatBody.innerHTML);
+        }
+
+        // Response generator combining features
+        function generateResponse(input) {
+            const query = input.toLowerCase();
+            const searchEnabled = document.getElementById('web-search').checked;
+
+            let prefix = "";
+            if (searchEnabled) {
+                prefix = "🌐 <i>[Web Search Active]</i><br>";
+            }
+
+            if (currentMode === 'fun') {
+                return prefix + "Haha, alright! Let's get chaotic. " + input + "? Absolutely wild request, but I'm here for it! 🔥";
+            } else if (currentMode === 'think') {
+                return prefix + "🧠 <b>[Deep Thinking Mode]</b><br>Analyzing prompt structure...<br><br>Here is a detailed breakdown regarding your query about " + input + ".";
+            }
+
+            if (query.includes('hello') || query.includes('hi')) {
+                return prefix + "Hello! I am <b>Noxy.ai</b>. What are we creating or solving today?";
+            } else if (query.includes('code') || query.includes('python') || query.includes('script')) {
+                return prefix + "Here is a clean code example for you:\n```python\n# Noxy.ai Generated Script\ndef hello_noxy():\n    print('Hello from Noxy.ai!')\n\nhello_noxy()\n```";
+            } else {
+                return prefix + "I processed your request using Noxy.ai. Let me know if you need any adjustments or deeper code snippets!";
+            }
+        }
+
+        function triggerFileUpload() {
+            document.getElementById('file-input').click();
+        }
+
+        function handleFile(input) {
+            if (input.files && input.files[0]) {
+                appendMessage(`📎 Attached file: <b>${input.files[0].name}</b>`, 'user');
+                setTimeout(() => {
+                    appendMessage(`I have analyzed the attached file (<b>${input.files[0].name}</b>). How would you like me to process it?`, 'ai');
+                }, 800);
+            }
+        }
+
+        function openPopup(id) { document.getElementById(id).classList.add('active'); }
+        function closePopup(id) { document.getElementById(id).classList.remove('active'); }
+
+        function clearChat() {
+            chatBody.innerHTML = '<div class="message ai">Hi! I am <b>Noxy.ai</b>, your free AI chatbot. How can I help you today?</div>';
+            localStorage.removeItem('noxy_chat_history');
+            closePopup('clear-popup');
+        }
+    </script>
+</body>
+</html>
+
