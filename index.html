@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Noxy.ai - Free AI Chatbot</title>
+    <!-- Modern Font Integration -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #080a0f;
+            --panel-bg: rgba(18, 22, 34, 0.75);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --accent-pink: #ff4081;
+            --accent-purple: #8e24aa;
+            --accent-gradient: linear-gradient(135deg, #ff4081, #7c4dff);
+            --user-msg: linear-gradient(135deg, #e91e63, #9c27b0);
+            --ai-msg: rgba(255, 255, 255, 0.05);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(255, 64, 129, 0.15) 0%, transparent 45%),
+                radial-gradient(circle at 90% 90%, rgba(124, 77, 255, 0.15) 0%, transparent 45%);
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: var(--text-main);
+        }
+
+        /* App Container */
+        .chat-app {
+            width: 100%;
+            height: 100%;
+            max-width: 900px;
+            max-height: 1000px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            .chat-app {
+                height: 92vh;
+                border-radius: 28px;
+                border: 1px solid var(--panel-border);
+                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            }
+        }
+
+        /* Header */
+        .header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: rgba(8, 10, 15, 0.4);
+        }
+
+        .bot-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-pink);
+            box-shadow: 0 0 10px rgba(255, 64, 129, 0.3);
+        }
+
+        .bot-title {
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .bot-sub {
+            font-size: 11px;
+            color: var(--text-sub);
+        }
+
+        /* Mode Pill Switcher */
+        .mode-selector {
+            display: flex;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 3px;
+            border-radius: 20px;
+            border: 1px solid var(--panel-border);
+        }
+
+        .mode-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+            padding: 5px 10px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn.active {
+            background: var(--accent-gradient);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(255, 64, 129, 0.3);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
+            color: var(--text-main);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Chat Body */
+        .chat-body {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-body::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+            animation: slideUp 0.2s cubic-bezier(0, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--user-msg);
+            border-bottom-right-radius: 4px;
+            color: #fff;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            background: var(--ai-msg);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--panel-border);
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 8px;
+            overflow-x: auto;
+            color: #4fc3f7;
+        }
+
+        /* Chips Carousel */
+        .suggestions {
+            display: flex;
+            gap: 8px;
+            padding: 0 16px 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .suggestions::-webkit-scrollbar { display: none; }
+
+        .chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-sub);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chip:active {
+            border-color: var(--accent-pink);
+            color: var(--text-main);
+        }
+
+        /* Footer Controls */
+        .footer {
+            padding: 12px 16px 20px;
+            border-top: 1px solid var(--panel-border);
+            background: rgba(8, 10, 15, 0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-bar {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 4px 6px 4px 14px;
+            transition: border-color 0.2s;
+        }
+
+        .input-bar:focus-within {
+            border-color: var(--accent-pink);
+        }
+
+        .input-box {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-size: 14px;
+            padding: 8px 0;
+        }
+
+        .send-btn {
+            background: var(--accent-gradient);
+            border: none;
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .tool-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-sub);
+            padding: 0 4px;
+        }
+
+        .toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        /* Mobile Bottom Sheet Popups */
+        .popup-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 999;
+        }
+
+        @media (min-width: 768px) {
+            .popup-overlay {
+                align-items: center;
+            }
+        }
+
+        .popup-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .popup-card {
+            background: #121622;
+            border-top: 1px solid var(--panel-border);
+            border-radius: 24px 24px 0 0;
+            padding: 24px;
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
+        }
+
+        @media (min-width: 768px) {
+            .popup-card {
+                border-radius: 24px;
+                border: 1px solid var(--panel-border);
+                transform: translateY(20px);
+            }
+        }
+
+        .popup-overlay.active .popup-card {
+            transform: translateY(0);
+        }
+
+        .popup-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .popup-action-btn {
+            background: var(--accent-gradient);
+            border: none;
+            color: #fff;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-app">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="bot-info">
+                <img src="data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAADwBACdASoAAYABUYy42233P3M/gE3/x8A43fI8A3y4/1L38f3L/2//Y//n/+X39//r49A/2//33/R///v/+/+p264e1A34C4y9fL08mBfR+X2j9wE/f/t5/5+X84B+/mX9n+2T8e/9T/l8w3m/eS/y/5T+2v+5y/3f0I/c42v8l69/s//0PqAfrf2R/97/O+X3yUf9v/oP9x7gn9Y64eL36gH/g9UD/AekB6gH9t/cL4An//9QD+yewB/8/YA/sH2AP8/2AOz63//yNwf8P4X/T88P0x+f/I/iX62fh28L80/mfxV44+gfgf1L+b94PwA3z/2f/x2BPy++v3oP82+137oew1yQe5fsAfpf6u/8/m+e4B7X/4/5Afpv/qfsx8AX8h/rXq5fyX/u9xX+af4P/q/yvwM/q/24/+fubf1f///43sAf//t4v4B//+3+/2X/4e17+o3/A/y/yS/v//////9f///6/e3/9/A5+7f///8f0Q/8X1a/2n/////5Af//s2/oF/6O3/3//mZ8i38r7b35D/qP+r/sv8n7K/5f2r/bf9z/ef8V/yP89+T3/D/wv99/pP39+4f2v/139n/xng7+x/2X+E/zv/S/2f7mfeV6A/41+e/2b+yfaB+lfw3/Yfn393v/P8yvhN/bv398An5v/Xv9n+9H9j90n3p9i/2f91vvI/vP7O/m/+k//f8N/pv3j/2v239g/8f2k+1f92+oX/K+3l/9PYg/pvy8//L3v/S34lP6v92/hT9sP9t/jv97/2P779k/wY/mn5H/l+37+u//H2lP+p8Av4p/Iv8/7S/8X3F/9d+435hfs71oPr/34P0i65v3f+6fy/+s+AHzr6vftR53vln15/N37N+s3/a+014M9v43/339t8Av4/8w/xX5U+0z8d/pXzHfy/m59f/2H/3/yfkT9i/2/3k/1D5FfYr/Kf/H/OeyF+hf7b4Avyn9jvg3/b/ur/jf/9/hf8b7A/1Y9eD1w/f/sI/sz3k+q7+yX/k///3A/6p/Y/+7/if9D/+/433J/8/++/3H+w/vT4xvtX/0/4/x/f3n0e31h/1w/1Q3Gf4O5A6I/iG62X256Fv2q/6/0R/d73Bfpqf6X/9+7R05/Y/+Cffv/i+mC2mN3S473/3u6/2y678Y3aO7/6oI4dO+v/tdA3aJ20R32e+k/543oD2A2A8bX2G8N3d8B/s32dOxfS34z+p24S6y3yT3D/1G2/8qO39a/b919d3f/uP2u2mP32e7f8M3e01+n6oD2i0M4o48S4C+2D/7f/g04f7I3iO3T+P/sV+O/OaA81N33R/1X2c1S5o5/l2/4Z7/s9kY2cO37a1f81d+L21B/4A4S/q9A1X9p/1N84/i9uTf23X/iX1kY712A8f844E36sB89R//6eE6S3090M//tI5S/0f40uI7E1xG+H179o2zB+8b+LpA2G7d/2/I/4S+5a528Y6z9b//I//r3a//c4j3/3pE21x/3E//2m21S/t0A0XwD/mO/A1A6d/P4t+66f8e4X23U32943A51c+2n51296x6vA3tG3sO58Z8A39vS7zV/3/7b2z9m59l/0R+s0mU4WfX4/3I99D8P3U9a4+81p825C6b7/8U8Q/4v//d89A1L6m92/5I0/X1x4P00D2+8f4+879O94Xv/1l0b41/0/51i1v43d2c94382HwD6R//f4S3332H4i38x/p/73919XfA36L/4xO3/8M8a/4u30e1y1e31l1A8y6P4f6B+e/Gf9j5n/d/+v09O0v/8v/sH0Ie/f8B632o/S9+y0p2+b29+O6q/9p23w52n3+y692cE/7t72oX2z5/2z3f+q3X81f2m07c4E0cT2G8E6a5D26mG4b4g+6+X0Xv2q6k/gA1Oa8+424X943v8h0v/uW9xO/5S3d45f3//tS/93m32I263/+6+83/4k5s4s4m0f/S1m99f1I/iP/n7g6x7yE4e512u1n33/5v+04N4f9A38c0N3e+wH/I7rP94O5e709T/P71/l7n4A6u4m/n4g1A4N4eA/k/A/0k/d18x2sA4f/9qU/323uA3Gf1zX3y/m98M38/20v64/e30//7719f9O713/t3//8P/S9y12A2+9a/5v4w/6v2u+pffO37C6R0n722m4S1d4x/d//v3/r1zP8u2/a/133939335f41O66p+/2H46sL63qE6pP/f+99O+7d54E+4v/7/v3+u8Y/a7o23A+N4y+/j/8//N73A99S899/X+P3/w1b965f8w/1e/s+/v485i2147+/x3N9q54c/pE+/9s937f3747r8S+/++412t//+3m3f8NfX23u/iB9A09d6f6D//f3G+O0u/q49n+yP8R//32//mG94X8n9A4T+4N+u4x2v4k1P3///8A49//f/p5Nf4e3c9yD1Gf8/5S63v/A/p4e/e5w93uY+81+c56n4/9s33u4e/+n1c7s//k1L8L9w2m3A2D7P/9sC2kMv+sU244/uD+/+286O5H2P+C7p1q/38y/f638N/N39a+x4v63+/b626y+8N7266p/9l/d4z1A3A342z/+f2+88M8P/gD7P/8e2X/2a0v8e1I03423A2M4y5x24e0o+/1X+0b/40k1O89/0a80E0j37/d//sD/v48u5x6P92y2x4d7/o7sP+u3/9v1O4S/c7a//t+62G3e//9s16y/6/+f20p3/e/+16X2q5x51A8o+f0X2i9x6r2/y78C6m2G3x57a8y3a/9a410/6/y1A+R1D4/9r+e0y4w6i2k3qO3a+x5e49/3q/q41p//f28x/3X346i+965c7m7f/7fvv//e1S9d+N+X+m//eP/E7k9d+31X+O33/+S24v91vO6h425y3k/X8v7P9f/2O75A8u2sP43v/8f///0+8u2o3q5f/9e7X8R4555v7N69A5//eM37X///a9eIff2O9/+GvI5a+U255S6uGv+/o/y8S//f6f3630v9B///2G/6s4R24R+p633f8x339u20eS/m0d//8v229x3///w1+S//j6t4y7P98+y/+2/9x///U3c4P494l+/r/9r/423v6m30e9O1O8o/28A///b3z52/+s/2jX/x5x40i/4m/+f2P/6/z63228S///A/eP3d4m/12G/3////i7/+1A334/+H3d9//67/29/73e/+m1C/z/04h/oG095C2L546p/2//m///8o//+20G2//1C8S+a///e//3v4e3X//qE/eP49/+A+/P/+O//N/8p3///v/3//p///t3/8f/x4f49p3/X+//t49Xm2G3t46e/82m04/eX/f+5/7v//1X///9i//f8///3v++3A2+f///v/a2n///m43A2/+f1///11G/22n6///q5f//r2///2v/////1O/+O0//827//+3A248m6///uO2///3+u0b95O6/31+f/f7x2///5v3X0d4//v+p75q73/5D3x8+tS9/w219//z/uC22i2/m6y/2633/w7/u79a9/39//v01t1d35//z/+/A4N+G3O3X9u3+n/Pz2X6x5O///u///e0d2N/P////s3f//8N//N0i32//4y2I3G23A25/99p///x8442G4y323G3A///4/P0v////0//5///y///8iO/59rS/+g/+5/U3z5p+/mN/p///7d/0///8y2256tT2//3v0800003X5/+38u/f/o32/4e///3f////f///A/S18R5v9/6//y/uS49f/u7pM/0A" class="avatar" alt="Avatar">
+                <div>
+                    <div class="bot-title">Noxy.ai</div>
+                    <div class="bot-sub">Free Ai chat bot</div>
+                </div>
+            </div>
+
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="setMode(this, 'fast')">⚡ Fast</button>
+                <button class="mode-btn" onclick="setMode(this, 'think')">🧠 Think</button>
+                <button class="mode-btn" onclick="setMode(this, 'fun')">🔥 Fun</button>
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-btn" onclick="openPopup('settings-popup')">⚙️</button>
+                <button class="icon-btn" onclick="openPopup('clear-popup')">🗑️</button>
+            </div>
+        </div>
+
+        <!-- CHAT BODY -->
+        <div class="chat-body" id="chat-body">
+            <div class="message ai">Hi! I am <b>Noxy.ai</b>, your free AI chatbot. How can I help you today?</div>
+        </div>
+
+        <!-- SUGGESTIONS CAROUSEL -->
+        <div class="suggestions">
+            <div class="chip" onclick="useSuggestion('Write a Python script for a bot')">🐍 Python Bot</div>
+            <div class="chip" onclick="useSuggestion('Explain quantum physics simply')">⚛️ Quantum Physics</div>
+            <div class="chip" onclick="useSuggestion('Give me 5 business ideas')">💡 Business Ideas</div>
+        </div>
+
+        <!-- INPUT FOOTER -->
+        <div class="footer">
+            <div class="input-bar">
+                <input type="text" id="user-input" class="input-box" placeholder="Ask Noxy.ai anything..." onkeydown="if(event.key==='Enter') sendMessage()">
+                <button class="send-btn" onclick="sendMessage()">➔</button>
+            </div>
+
+            <div class="tool-bar">
+                <label class="toggle-btn">
+                    <input type="checkbox" id="web-search"> 🌐 Search Web
+                </label>
+                <label class="toggle-btn" onclick="document.getElementById('file-input').click()">
+                    📎 Attachment
+                </label>
+                <input type="file" id="file-input" style="display:none;" onchange="handleFile(this)">
+            </div>
+        </div>
+
+        <!-- MOBILE BOTTOM SHEET POPUPS -->
+        <div class="popup-overlay" id="settings-popup">
+            <div class="popup-card">
+                <div class="popup-title">Settings</div>
+                <label class="toggle-btn" style="justify-content: space-between; font-size: 14px;">
+                    <span>Enable Streaming Text</span>
+                    <input type="checkbox" checked>
+                </label>
+                <button class="popup-action-btn" onclick="closePopup('settings-popup')">Done</button>
+            </div>
+        </div>
+
+        <div class="popup-overlay" id="clear-popup">
+            <div class="popup-card">
+                <div class="popup-title">Clear History?</div>
+                <p style="font-size: 13px; color: var(--text-sub);">This will permanently erase all messages from your device.</p>
+                <button class="popup-action-btn" style="background: #ef4444;" onclick="clearChat()">Clear Messages</button>
+                <button class="icon-btn" style="width: 100%; border-radius: 12px;" onclick="closePopup('clear-popup')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatBody = document.getElementById('chat-body');
+        let currentMode = 'fast';
+
+        window.onload = () => {
+            const saved = localStorage.getItem('noxy_chat_history');
+            if (saved) {
+                chatBody.innerHTML = saved;
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+        };
+
+        function setMode(btn, mode) {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentMode = mode;
+        }
+
+        function useSuggestion(text) {
+            document.getElementById('user-input').value = text;
+            sendMessage();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('user-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user');
+            input.value = '';
+
+            setTimeout(() => {
+                const response = generateResponse(text);
+                appendMessage(response, 'ai');
+            }, 500);
+        }
+
+        function appendMessage(text, sender) {
+            const msgNode = document.createElement('div');
+            msgNode.className = `message ${sender}`;
+            
+            if (text.includes('```')) {
+                const parts = text.split('```');
+                msgNode.innerHTML = parts[0] + `<div class="code-block">${parts[1]}</div>` + (parts[2] || '');
+            } else {
+                msgNode.innerHTML = text;
+            }
+
+            chatBody.appendChild(msgNode);
+            chatBody.scrollTop = chatBody.scrollHeight;
+            localStorage.setItem('noxy_chat_history', chatBody.innerHTML);
+        }
+
+        function generateResponse(input) {
+            const searchEnabled = document.getElementById('web-search').checked;
+            let prefix = searchEnabled ? "🌐 <i>[Web Search Active]</i><br>" : "";
+
+            if (currentMode === 'fun') {
+                return prefix + "Haha, wild request! " + input + "? Absolutely on it! 🔥";
+            } else if (currentMode === 'think') {
+                return prefix + "🧠 <b>[Deep Think Mode]</b><br>Analyzing prompt structure...<br><br>Here is a detailed answer to: " + input;
+            }
+
+            return prefix + "Noxy.ai has processed your prompt regarding: <b>" + input + "</b>. Let me know if you need code or further details!";
+        }
+
+        function handleFile(input) {
+            if (input.files && input.files[0]) {
+                appendMessage(`📎 Attached file: <b>${input.files[0].name}</b>`, 'user');
+                setTimeout(() => {
+                    appendMessage(`Analyzed file: <b>${input.files[0].name}</b>. How would you like me to process this?`, 'ai');
+                }, 600);
+            }
+        }
+
+        function openPopup(id) { document.getElementById(id).classList.add('active'); }
+        function closePopup(id) { document.getElementById(id).classList.remove('active'); }
+
+        function clearChat() {
+            chatBody.innerHTML = '<div class="message ai">Hi! I am <b>Noxy.ai</b>, your free AI chatbot. How can I help you today?</div>';
+            localStorage.removeItem('noxy_chat_history');
+            closePopup('clear-popup');
+        }
+    </script>
+</body>
+</html>
