@@ -4,20 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Noxy.ai - Free AI Chatbot</title>
-    <!-- Modern Font Integration -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
+    <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
+    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap)" rel="stylesheet">
     <style>
         :root {
             --bg-dark: #080a0f;
-            --panel-bg: rgba(18, 22, 34, 0.75);
-            --panel-border: rgba(255, 255, 255, 0.08);
+            --panel-bg: rgba(18, 22, 34, 0.85);
+            --panel-border: rgba(255, 255, 255, 0.1);
             --accent-pink: #ff4081;
             --accent-purple: #8e24aa;
             --accent-gradient: linear-gradient(135deg, #ff4081, #7c4dff);
             --user-msg: linear-gradient(135deg, #e91e63, #9c27b0);
-            --ai-msg: rgba(255, 255, 255, 0.05);
+            --ai-msg: rgba(255, 255, 255, 0.07);
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
         }
@@ -45,7 +44,6 @@
             color: var(--text-main);
         }
 
-        /* App Container */
         .chat-app {
             width: 100%;
             height: 100%;
@@ -68,26 +66,27 @@
             }
         }
 
-        /* Header */
+        /* HEADER */
         .header {
             padding: 12px 16px;
             border-bottom: 1px solid var(--panel-border);
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
-            background: rgba(8, 10, 15, 0.4);
+            gap: 10px;
+            background: rgba(8, 10, 15, 0.6);
         }
 
         .bot-info {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .avatar {
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid var(--accent-pink);
@@ -105,7 +104,6 @@
             color: var(--text-sub);
         }
 
-        /* Mode Pill Switcher */
         .mode-selector {
             display: flex;
             background: rgba(0, 0, 0, 0.4);
@@ -148,15 +146,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
-            transition: background 0.2s;
+            font-size: 14px;
         }
 
-        .icon-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Chat Body */
+        /* CHAT BODY */
         .chat-body {
             flex: 1;
             padding: 16px;
@@ -165,15 +158,6 @@
             flex-direction: column;
             gap: 14px;
             scroll-behavior: smooth;
-        }
-
-        .chat-body::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .chat-body::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
         }
 
         .message {
@@ -206,7 +190,7 @@
         }
 
         .code-block {
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             padding: 10px;
@@ -215,9 +199,10 @@
             margin-top: 8px;
             overflow-x: auto;
             color: #4fc3f7;
+            white-space: pre-wrap;
         }
 
-        /* Chips Carousel */
+        /* SUGGESTIONS */
         .suggestions {
             display: flex;
             gap: 8px;
@@ -237,19 +222,13 @@
             color: var(--text-sub);
             white-space: nowrap;
             cursor: pointer;
-            transition: all 0.2s;
         }
 
-        .chip:active {
-            border-color: var(--accent-pink);
-            color: var(--text-main);
-        }
-
-        /* Footer Controls */
+        /* INPUT FOOTER */
         .footer {
             padding: 12px 16px 20px;
             border-top: 1px solid var(--panel-border);
-            background: rgba(8, 10, 15, 0.6);
+            background: rgba(8, 10, 15, 0.7);
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -258,11 +237,10 @@
         .input-bar {
             display: flex;
             align-items: center;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.4);
             border: 1px solid var(--panel-border);
             border-radius: 24px;
             padding: 4px 6px 4px 14px;
-            transition: border-color 0.2s;
         }
 
         .input-bar:focus-within {
@@ -310,25 +288,23 @@
             cursor: pointer;
         }
 
-        /* Mobile Bottom Sheet Popups */
+        /* POPUPS */
         .popup-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.75);
             backdrop-filter: blur(10px);
             display: flex;
             align-items: flex-end;
             justify-content: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.25s ease;
             z-index: 999;
         }
 
         @media (min-width: 768px) {
-            .popup-overlay {
-                align-items: center;
-            }
+            .popup-overlay { align-items: center; }
         }
 
         .popup-overlay.active {
@@ -347,7 +323,7 @@
             flex-direction: column;
             gap: 16px;
             transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
+            transition: transform 0.25s cubic-bezier(0, 0, 0.2, 1);
         }
 
         @media (min-width: 768px) {
@@ -409,14 +385,14 @@
             <div class="message ai">Hi! I am <b>Noxy.ai</b>, your free AI chatbot. How can I help you today?</div>
         </div>
 
-        <!-- SUGGESTIONS CAROUSEL -->
+        <!-- SUGGESTIONS -->
         <div class="suggestions">
             <div class="chip" onclick="useSuggestion('Write a Python script for a bot')">🐍 Python Bot</div>
             <div class="chip" onclick="useSuggestion('Explain quantum physics simply')">⚛️ Quantum Physics</div>
             <div class="chip" onclick="useSuggestion('Give me 5 business ideas')">💡 Business Ideas</div>
         </div>
 
-        <!-- INPUT FOOTER -->
+        <!-- FOOTER -->
         <div class="footer">
             <div class="input-bar">
                 <input type="text" id="user-input" class="input-box" placeholder="Ask Noxy.ai anything..." onkeydown="if(event.key==='Enter') sendMessage()">
@@ -434,7 +410,7 @@
             </div>
         </div>
 
-        <!-- MOBILE BOTTOM SHEET POPUPS -->
+        <!-- SETTINGS POPUP -->
         <div class="popup-overlay" id="settings-popup">
             <div class="popup-card">
                 <div class="popup-title">Settings</div>
@@ -446,6 +422,7 @@
             </div>
         </div>
 
+        <!-- CLEAR POPUP -->
         <div class="popup-overlay" id="clear-popup">
             <div class="popup-card">
                 <div class="popup-title">Clear History?</div>
@@ -484,25 +461,25 @@
             const text = input.value.trim();
             if (!text) return;
 
-            appendMessage(text, 'user');
+            appendMessage(escapeHTML(text), 'user');
             input.value = '';
 
             setTimeout(() => {
                 const response = generateResponse(text);
                 appendMessage(response, 'ai');
-            }, 500);
+            }, 400);
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
         }
 
         function appendMessage(text, sender) {
             const msgNode = document.createElement('div');
             msgNode.className = `message ${sender}`;
-            
-            if (text.includes('```')) {
-                const parts = text.split('```');
-                msgNode.innerHTML = parts[0] + `<div class="code-block">${parts[1]}</div>` + (parts[2] || '');
-            } else {
-                msgNode.innerHTML = text;
-            }
+            msgNode.innerHTML = text;
 
             chatBody.appendChild(msgNode);
             chatBody.scrollTop = chatBody.scrollHeight;
@@ -510,23 +487,30 @@
         }
 
         function generateResponse(input) {
+            const query = input.toLowerCase().trim();
             const searchEnabled = document.getElementById('web-search').checked;
             let prefix = searchEnabled ? "🌐 <i>[Web Search Active]</i><br>" : "";
 
             if (currentMode === 'fun') {
-                return prefix + "Haha, wild request! " + input + "? Absolutely on it! 🔥";
+                return prefix + "Haha, wild request! \"" + escapeHTML(input) + "\"? Absolutely on it! 🔥";
             } else if (currentMode === 'think') {
-                return prefix + "🧠 <b>[Deep Think Mode]</b><br>Analyzing prompt structure...<br><br>Here is a detailed answer to: " + input;
+                return prefix + "🧠 <b>[Deep Think Mode]</b><br>Analyzing prompt structure...<br><br>Here is a detailed breakdown for: " + escapeHTML(input);
             }
 
-            return prefix + "Noxy.ai has processed your prompt regarding: <b>" + input + "</b>. Let me know if you need code or further details!";
+            if (query.includes('hello') || query.includes('hi')) {
+                return prefix + "Hello! I am <b>Noxy.ai</b>. What are we building or solving today?";
+            } else if (query.includes('code') || query.includes('python') || query.includes('script')) {
+                return prefix + "Here is a clean code example for you:<div class=\"code-block\"># Noxy.ai Generated Script\ndef hello_noxy():\n    print('Hello from Noxy.ai!')\n\nhello_noxy()</div>";
+            } else {
+                return prefix + "Noxy.ai received your prompt: <b>" + escapeHTML(input) + "</b>. Let me know if you need code snippets or extra details!";
+            }
         }
 
         function handleFile(input) {
             if (input.files && input.files[0]) {
-                appendMessage(`📎 Attached file: <b>${input.files[0].name}</b>`, 'user');
+                appendMessage(`📎 Attached file: <b>${escapeHTML(input.files[0].name)}</b>`, 'user');
                 setTimeout(() => {
-                    appendMessage(`Analyzed file: <b>${input.files[0].name}</b>. How would you like me to process this?`, 'ai');
+                    appendMessage(`Analyzed file: <b>${escapeHTML(input.files[0].name)}</b>. How would you like me to process this?`, 'ai');
                 }, 600);
             }
         }
